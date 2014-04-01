@@ -1,14 +1,63 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:icecore="http://www.icefaces.org/icefaces/core"
+      xmlns:ice="http://www.icesoft.com/icefaces/component" 
+      xmlns:ace="http://www.icefaces.org/icefaces/components"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
-        <title>Facelet Title</title>
+        <title>Sistema de Monitorización Web</title>
+        <h:outputStylesheet library="css" name="icefaces.css"/>
+        <h:outputStylesheet library="css" name="style.css"/>
+        
+        
+<!--        <META HTTP-EQUIV="refresh" CONTENT="5"/>-->
     </h:head>
     <h:body>
-        Hello from Facelets
+          
+        <h:form id="mainForm">
+            <ui:include src="typeOnePanel.xhtml"/>
+         <icecore:refresh interval="5"/>
+            <ace:panel header="Sistema de Monitorización Web">
+                <h:panelGroup layout="block">
+                    <ui:repeat value="#{mainViewSBean.monitorManagedBean.hostList}" var="host">
+                           <ace:panel styleClass="panelHost" header="Host: #{host.ip}">
+                               <h:panelGroup layout="block" styleClass="centrado margin2inf">
+                                   <h:outputText value="Estado: "/>
+                                   <h:outputText rendered="#{host.connected}" styleClass="verdeOk" value="CONECTADO"/>    
+                                   <h:outputText rendered="#{!host.connected}" styleClass="rojoKo" value="CAIDO"/>    
+                               </h:panelGroup>
+                               <ui:repeat value="#{host.processList}" var="process">
+                                   <h:panelGroup rendered="#{process.alertFatal}">
+                                       <audio src="#{process.alertFatal?'resources/audio/emergency029.mp3':''}" autoplay="true"/>
+                                   </h:panelGroup>
+                                   <div class="linea"/>
+                                   <h:panelGroup layout="block" styleClass="margin2sup">
+                                       <h:outputText value="Proceso: #{process.name}"/>
+                                       <h:outputText rendered="#{process.ok}" styleClass="verdeOk margin2izq" value="OK" />
+                                       <h:outputText rendered="#{!process.ok}" styleClass="rojoKo margin2izq" value="KO" />
+                                   </h:panelGroup>
+                                   
+                                   <h:panelGroup layout="block" styleClass="margin2sup margin4izq margin2inf">
+                                       <h:outputText  value="Ficheros: (#{process.numberFilesToProcess} procesar/"/>
+                                       <h:outputText rendered="#{process.filesError.size()==0}" styleClass="letraVerdeOk" value="#{process.filesError.size()} erróneos"/>
+                                       <ice:commandLink  rendered="#{process.filesError.size()>0}"  styleClass="letraAmarillaAlerta" value="#{process.filesError.size()} erróneos" actionListener="#{mainViewSBean.setProcessToViewFiles(process)}" onclick="processDialog.show();"/>
+                                       <h:outputText value=")"/>
+                                   </h:panelGroup>
+                                   
+                                  
+                               </ui:repeat>
+                           </ace:panel>
+                       </ui:repeat>
+                    <div class="finFloat"/>
+                    
+                   </h:panelGroup>
+               </ace:panel>
+        
+           </h:form>
         <br />
-        <h:link outcome="welcomeIcefaces" value="ICEfaces welcome page" />
     </h:body>
 </html>
 

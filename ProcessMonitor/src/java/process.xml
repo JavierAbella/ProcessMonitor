@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Se organizan los elementos por hosts para que el rendimiento sea óptimo
+
+Los protocolos aceptados son:
+  - ssh
+  - jdbc
+  
+Se definen los procesos de distintos tipos según su tipo:
+
+  TIPO 1 - Procesos de integración
+  Este tipo de procesos se caracterizan por recoger ficheros y procesarlos, por ello tienen dos
+  consultas de comprobación de que están activos:
+    - SentenceIsOk > En este tag debe ir la consulta que comprueba que el proceso está vivo
+    - SentenceIsOk2 > En este tag, se comprueba que el proceso está vivo, normalmente porque está escribiendo
+                     en el log,  lo que nos lleva al tercer tag:
+    - milisUltimoLog > Es el tiempo que consideramos, a partir del cual podemos asumir que el proceso
+                       está atascado o muerto
+                       
+  Además de comprobar que está vivo el proceso, es útil monitorizar el número de ficheros erróneos
+  que ha procesado, porque deben recibir tratamiento.
+-->
+
+
+<root>
+    <host ip="localhost" port="22" user="fredycat" pass="DesignGuru10" protocol="ssh" temp="10000">
+        <process>
+            <name>Proceso 1</name>
+            <description>Es el integrador general, que procesa los siguientes archivos: \n
+                        - Encargos \n
+                        - Clientes \n
+                        - Facturas \n
+                        - Fedicom \n
+                        - EDI \n
+                        - Cartas \n
+                        - Clubes \n
+                        - Ficheros (Sección de descargas de la web de clientes) \n
+            </description>
+            <type>1</type>
+            <sentenceGetNumberFiles>ls /home/fredycat/Desktop/pruebasMonitor/err | wc -l</sentenceGetNumberFiles>
+            <sentenceIsOk>/home/fredycat/Desktop/pruebasMonitor/scriptAleatorioOKKO.sh</sentenceIsOk>
+            <sentenceIsOk2></sentenceIsOk2>
+            <milisUltimoLog>2400000</milisUltimoLog>
+            <sentencegetErrors>tail -1000 /data/web/app/logs/DataIntegrator.log | awk -vDate=`date -d'now-2 hours' +[%d/%b/%Y:%H:%M:%S` ' { if ($4 > Date) print}' | grep ERROR</sentencegetErrors>
+            <files>
+                <file>ls /home/fredycat/Desktop/pruebasMonitor/err | grep ".err"</file>
+            </files>
+        </process>
+        
+        
+    </host>
+    
+</root>
